@@ -48,7 +48,7 @@ static async findByUserId(user_id) {
     );
   }
 
-  static async update(post_id, { content, image_url }) {
+static async update(post_id, { content, image_url }) {
   await database.execute(
     'UPDATE posts SET content = ?, image_url = ? WHERE id = ?',
     [content, image_url, post_id]

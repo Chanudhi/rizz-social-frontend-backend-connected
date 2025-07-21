@@ -135,29 +135,38 @@ useEffect(() => {
     return true;
   };
 
-  const handleSaveEdit = async () => {
-    if (!validateEditForm()) return;
+const handleSaveEdit = async () => {
+  if (!validateEditForm()) return;
+  
+  setLoading(prev => ({ ...prev, editing: true }));
+  setErrors(prev => ({ ...prev, edit: "" }));
+  
+  try {
+    const formData = new FormData();
+    formData.append('content', editFormData.caption.trim());
     
-    setLoading(prev => ({ ...prev, editing: true }));
-    setErrors(prev => ({ ...prev, edit: "" }));
-    
-    try {
-      const formData = new FormData();
-      formData.append('content', editFormData.caption.trim());
-      if (editFormData.selectedFile) {
-        formData.append('image', editFormData.selectedFile);
-      }
-      
-      await postsAPI.update(editingPost, formData);
-      await fetchUserPosts();
-      setEditingPost(null);
-    } catch (error) {
-      setErrors(prev => ({ ...prev, edit: error.message || "Failed to update post" }));
-      console.error("Error updating post:", error);
-    } finally {
-      setLoading(prev => ({ ...prev, editing: false }));
+    // Debug: Log FormData contents before sending
+    for (let [key, value] of formData.entries()) {
+      console.log(key, value);
     }
-  };
+
+    if (editFormData.selectedFile) {
+      formData.append('image', editFormData.selectedFile);
+    }
+    
+    await postsAPI.update(editingPost, formData);
+    await fetchUserPosts();
+    setEditingPost(null);
+  } catch (error) {
+    setErrors(prev => ({ 
+      ...prev, 
+      edit: error.message || "Failed to update post. Please try again." 
+    }));
+    console.error("Error updating post:", error);
+  } finally {
+    setLoading(prev => ({ ...prev, editing: false }));
+  }
+};
 
   const handleDeleteClick = (post) => {
     setPostToDelete(post);

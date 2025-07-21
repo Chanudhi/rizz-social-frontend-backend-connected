@@ -97,7 +97,9 @@ const getUserPosts = async (req, res) => {
 const updatePost = async (req, res) => {
   try {
     const { id } = req.params;
-    const { content } = req.body;
+    const content = req.body.content; // Get content from FormData
+    
+    console.log('Update request received:', { id, content }); // Debug log
 
     const existingPost = await Post.findById(id);
     if (!existingPost) {

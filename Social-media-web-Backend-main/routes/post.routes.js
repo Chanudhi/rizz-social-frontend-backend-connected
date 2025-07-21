@@ -28,7 +28,7 @@ router.get('/:id', postController.getPostById);
 router.put(
   '/:id',
   authMiddleware,
-  uploadMiddleware.single('image'),
+  uploadMiddleware.single('image'), 
   postController.updatePost
 );
 
