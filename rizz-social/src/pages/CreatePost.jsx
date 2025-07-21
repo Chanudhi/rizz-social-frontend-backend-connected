@@ -21,50 +21,25 @@ const handlePost = async () => {
     return;
   }
 
-<<<<<<< HEAD
   setIsLoading(true);
   setError('');
-=======
-    setIsLoading(true);
-    
-    try {
-      const formData = new FormData();
-      formData.append('content', caption.trim());
-      if (selectedFile) {
-        formData.append('image', selectedFile);
-        // Add debug logging
-        console.log('Selected file:', {
-          name: selectedFile.name,
-          type: selectedFile.type,
-          size: selectedFile.size
-        });
-      }
-      
-      const response = await postsAPI.create(formData);
-      console.log('Post created:', response); // Debug log
-      
-      navigate("/");
-    } catch (err) {
-      console.error('Full error:', err); // More detailed error logging
-      setError(err.response?.data?.error || err.message || "Failed to create post");
-    } finally {
-      setIsLoading(false);
-    }
-  };
->>>>>>> 4f08c0dc37f13ad7e39516fbe2d063640bceadae
-
-  const formData = new FormData();
-  formData.append('content', caption);
   
-  if (selectedFile) {
-    formData.append('image', selectedFile);
-  }
-
   try {
+    const formData = new FormData();
+    formData.append('content', caption);
+    
+    if (selectedFile) {
+      formData.append('image', selectedFile);
+    }
+
     await postsAPI.create(formData);
     navigate("/");
   } catch (err) {
-    setError(err.message || 'Failed to create post');
+    if (err.message.includes('expired')) {
+      setError('Your session has expired. Please login again.');
+    } else {
+      setError(err.message || 'Failed to create post');
+    }
     console.error('Full error:', err);
   } finally {
     setIsLoading(false);

@@ -6,6 +6,12 @@ const handleResponse = async (response) => {
   const data = await response.json();
   
   if (!response.ok) {
+    if (data.code === 'TOKEN_EXPIRED') {
+      // Clear token and redirect to login
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login?session=expired';
+    }
     throw new Error(data.message || data.error || 'Request failed');
   }
   
@@ -48,46 +54,31 @@ export const authAPI = {
 // Posts endpoints
 export const postsAPI = {
   create: async (postData) => {
-    try {
-<<<<<<< HEAD
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
-      const response = await fetch(`${API_BASE}/posts`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          // Don't set Content-Type - let browser set it automatically for FormData
-        },
-        body: postData // FormData
-=======
-      const response = await fetch(`${API_BASE}/posts`, {
-        method: 'POST',
-        headers: {
-          ...getAuthHeaders(),
-          // Don't set Content-Type - let browser set it with boundary
-        },
-        body: postData // Directly pass FormData
->>>>>>> 4f08c0dc37f13ad7e39516fbe2d063640bceadae
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-<<<<<<< HEAD
-        throw new Error(errorData.error || 'Post creation failed');
-=======
-        throw new Error(errorData.message || 'Post creation failed');
->>>>>>> 4f08c0dc37f13ad7e39516fbe2d063640bceadae
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('API Error:', error);
-      throw error;
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token found');
     }
-  },
+
+    const response = await fetch(`${API_BASE}/posts`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: postData
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Post creation failed');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('API Error:', error);
+    throw error;
+  }
+},
 
   getUserPosts: async (userId) => {
     const response = await fetch(`${API_BASE}/posts/user/${userId}?_=${Date.now()}`, {

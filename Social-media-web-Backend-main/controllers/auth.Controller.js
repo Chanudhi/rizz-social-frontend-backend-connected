@@ -35,7 +35,7 @@ const register = async (req, res) => {
     });
 
     // Generate JWT
-    const token = jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '1h' });
+   const token = jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
     res.status(201).json({ 
       token,
