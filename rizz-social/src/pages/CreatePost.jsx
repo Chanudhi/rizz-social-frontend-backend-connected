@@ -29,13 +29,21 @@ export default function CreatePost() {
       formData.append('content', caption.trim());
       if (selectedFile) {
         formData.append('image', selectedFile);
+        // Add debug logging
+        console.log('Selected file:', {
+          name: selectedFile.name,
+          type: selectedFile.type,
+          size: selectedFile.size
+        });
       }
       
-      await postsAPI.create(formData);
+      const response = await postsAPI.create(formData);
+      console.log('Post created:', response); // Debug log
+      
       navigate("/");
     } catch (err) {
-      setError(err.message || "Failed to create post");
-      console.error("Post creation error:", err);
+      console.error('Full error:', err); // More detailed error logging
+      setError(err.response?.data?.error || err.message || "Failed to create post");
     } finally {
       setIsLoading(false);
     }
