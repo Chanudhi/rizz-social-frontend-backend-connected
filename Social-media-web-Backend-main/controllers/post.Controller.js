@@ -35,22 +35,19 @@ const getPostById = async (req, res) => {
 
 const createPost = async (req, res) => {
   try {
-    console.log('Auth header:', req.headers['authorization']); // Debug
-    console.log('User from token:', req.user); // Debug
-    
-    if (!req.body.content && !req.file) {
-      return res.status(400).json({ error: 'Content or image required' });
-    }
-
-    const post = await Post.create({
+    const imagePath = req.file 
+      ? `/uploads/${req.file.filename}` 
+      : null;
+    const postId = await Post.create({
       user_id: req.user.id,
       content: req.body.content || null,
       image_url: req.file ? `/uploads/${req.file.filename}` : null
     });
-
-    res.status(201).json(post);
+    // Get the created post with user information
+    const createdPost = await Post.findById(postId);
+    res.status(201).json(createdPost);
   } catch (error) {
-    console.error('Create error:', error);
+    console.error('Create post error:', error);
     res.status(500).json({ error: error.message });
   }
 };

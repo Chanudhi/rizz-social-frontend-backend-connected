@@ -49,6 +49,7 @@ export const authAPI = {
 export const postsAPI = {
   create: async (postData) => {
     try {
+<<<<<<< HEAD
       const token = localStorage.getItem('token');
       if (!token) {
         throw new Error('No authentication token found');
@@ -61,11 +62,24 @@ export const postsAPI = {
           // Don't set Content-Type - let browser set it automatically for FormData
         },
         body: postData // FormData
+=======
+      const response = await fetch(`${API_BASE}/posts`, {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          // Don't set Content-Type - let browser set it with boundary
+        },
+        body: postData // Directly pass FormData
+>>>>>>> 4f08c0dc37f13ad7e39516fbe2d063640bceadae
       });
 
       if (!response.ok) {
         const errorData = await response.json();
+<<<<<<< HEAD
         throw new Error(errorData.error || 'Post creation failed');
+=======
+        throw new Error(errorData.message || 'Post creation failed');
+>>>>>>> 4f08c0dc37f13ad7e39516fbe2d063640bceadae
       }
 
       return await response.json();
