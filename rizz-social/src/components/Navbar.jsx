@@ -27,7 +27,7 @@ export default function Navbar({ showSearch = true, title = null }) {
             {user?.username || 'User'}
           </span>
           <div className="w-9 h-9 rounded-full bg-neutral-700 flex items-center justify-center cursor-pointer">
-            <NavLink to="/profile" >
+            <NavLink to="/post" >
               <User className="text-gray-200" size={22} />
             </NavLink>
           </div>

@@ -34,15 +34,23 @@ const getPostById = async (req, res) => {
 // @access  Private
 const createPost = async (req, res) => {
   try {
+    console.log('Request body:', req.body); // Debug
+    console.log('Uploaded file:', req.file); // Debug
+
+    if (!req.body.content) {
+      return res.status(400).json({ error: 'Content is required' });
+    }
+
     const imagePath = req.file 
-      ? `/uploads/${req.file.filename}` 
+      ? `/uploads/${req.file.filename}`
       : null;
+
     const postId = await Post.create({
       user_id: req.user.id,
       content: req.body.content,
       image_url: imagePath
     });
-    // Get the created post with user information
+
     const createdPost = await Post.findById(postId);
     res.status(201).json(createdPost);
   } catch (error) {

@@ -19,7 +19,7 @@ static async findByUserId(user_id) {
        FROM posts p 
        JOIN users u ON p.user_id = u.id 
        WHERE p.user_id = ? 
-       ORDER BY p.created_at DESC`,
+       ORDER BY p.created_date DESC`,
       [user_id]
     );
     return rows;
