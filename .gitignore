@@ -107,8 +107,7 @@ Thumbs.db
 *.sqlite
 *.db
 
-# Uploads
-uploads/
+
 
 # Cache
 .cache/

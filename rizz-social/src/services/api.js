@@ -49,22 +49,26 @@ export const authAPI = {
 // Posts endpoints
 export const postsAPI = {
   create: async (postData) => {
-    const formData = new FormData();
-    formData.append('content', postData.content);
-    
-    if (postData.image) {
-      formData.append('image', postData.image);
+    try {
+      const response = await fetch(`${API_BASE}/posts`, {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          // Don't set Content-Type - let browser set it with boundary
+        },
+        body: postData // Directly pass FormData
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Post creation failed');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('API Error:', error);
+      throw error;
     }
-    
-    const response = await fetch(`${API_BASE}/posts`, {
-      method: 'POST',
-      headers: {
-        ...getAuthHeaders(),
-      },
-      body: formData
-    });
-    
-    return handleResponse(response);
   },
 
    getUserPosts: async (userId) => {

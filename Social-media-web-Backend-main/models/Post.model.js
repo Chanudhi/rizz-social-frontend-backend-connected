@@ -1,16 +1,20 @@
 const database = require('../configs/db.config');
 
 class Post {
-  static async create({ user_id, content, image_url }) {
-  // Ensure image_url is never undefined - convert to null if needed
-  const safeImageUrl = image_url !== undefined ? image_url : null;
-  
-  const [result] = await database.execute(
-    'INSERT INTO posts (user_id, content, image_url) VALUES (?, ?, ?)',
-    [user_id, content, safeImageUrl]  // Now guaranteed to be string or null
-  );
-  return result.insertId;
+static async create({ user_id, content, image_url }) {
+  try {
+    const safeImageUrl = image_url !== undefined ? image_url : null;
+    const [result] = await database.execute(
+      'INSERT INTO posts (user_id, content, image_url) VALUES (?, ?, ?)',
+      [user_id, content, safeImageUrl]
+    );
+    return result.insertId;
+  } catch (error) {
+    console.error('Post creation error:', error);
+    throw error; // Propagate to controller
+  }
 }
+
 
 static async findByUserId(user_id) {
   try {
@@ -19,7 +23,7 @@ static async findByUserId(user_id) {
        FROM posts p 
        JOIN users u ON p.user_id = u.id 
        WHERE p.user_id = ? 
-       ORDER BY p.created_at DESC`,
+       ORDER BY p.created_date DESC`,
       [user_id]
     );
     return rows;

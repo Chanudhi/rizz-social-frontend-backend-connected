@@ -34,20 +34,31 @@ const getPostById = async (req, res) => {
 // @access  Private
 const createPost = async (req, res) => {
   try {
+    console.log('Request files:', req.files); // Check if file exists
+    console.log('Request body:', req.body); // Check content
+
+    if (!req.body.content) {
+      return res.status(400).json({ error: 'Content is required' });
+    }
+
     const imagePath = req.file 
-      ? `/uploads/${req.file.filename}` 
+      ? `/uploads/${req.file.filename}`
       : null;
+
     const postId = await Post.create({
       user_id: req.user.id,
       content: req.body.content,
       image_url: imagePath
     });
-    // Get the created post with user information
+
     const createdPost = await Post.findById(postId);
     res.status(201).json(createdPost);
   } catch (error) {
     console.error('Create post error:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ 
+      error: 'Failed to create post',
+      details: process.env.NODE_ENV === 'development' ? error.message : null
+    });
   }
 };
 // @route   DELETE /api/v1/posts/:id
