@@ -1,0 +1,25 @@
+{
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0"
+  },
+  "name": "socialmediaplatform",
+  "version": "1.0.0",
+  "description": "A full-stack social media application built with React (frontend) and Node.js (backend).",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Chanudhi/rizz-social-frontend-backend-connected.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Chanudhi/rizz-social-frontend-backend-connected/issues"
+  },
+  "homepage": "https://github.com/Chanudhi/rizz-social-frontend-backend-connected#readme"
+}

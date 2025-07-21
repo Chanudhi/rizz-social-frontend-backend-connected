@@ -32,35 +32,29 @@ const getPostById = async (req, res) => {
 // @route   POST /api/v1/posts
 // @desc    Create a new post with optional image
 // @access  Private
+
 const createPost = async (req, res) => {
   try {
-    console.log('Request files:', req.files); // Check if file exists
-    console.log('Request body:', req.body); // Check content
-
-    if (!req.body.content) {
-      return res.status(400).json({ error: 'Content is required' });
+    console.log('Auth header:', req.headers['authorization']); // Debug
+    console.log('User from token:', req.user); // Debug
+    
+    if (!req.body.content && !req.file) {
+      return res.status(400).json({ error: 'Content or image required' });
     }
 
-    const imagePath = req.file 
-      ? `/uploads/${req.file.filename}`
-      : null;
-
-    const postId = await Post.create({
+    const post = await Post.create({
       user_id: req.user.id,
-      content: req.body.content,
-      image_url: imagePath
+      content: req.body.content || null,
+      image_url: req.file ? `/uploads/${req.file.filename}` : null
     });
 
-    const createdPost = await Post.findById(postId);
-    res.status(201).json(createdPost);
+    res.status(201).json(post);
   } catch (error) {
-    console.error('Create post error:', error);
-    res.status(500).json({ 
-      error: 'Failed to create post',
-      details: process.env.NODE_ENV === 'development' ? error.message : null
-    });
+    console.error('Create error:', error);
+    res.status(500).json({ error: error.message });
   }
 };
+
 // @route   DELETE /api/v1/posts/:id
 // @desc    Delete a post by ID if owned by the current user
 // @access  Private

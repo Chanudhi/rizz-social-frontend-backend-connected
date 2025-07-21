@@ -1,5 +1,4 @@
 // API Service for frontend-backend communication
-
 const API_BASE = '/api/v1';
 
 // Helper function to handle API responses
@@ -50,18 +49,23 @@ export const authAPI = {
 export const postsAPI = {
   create: async (postData) => {
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
       const response = await fetch(`${API_BASE}/posts`, {
         method: 'POST',
         headers: {
-          ...getAuthHeaders(),
-          // Don't set Content-Type - let browser set it with boundary
+          'Authorization': `Bearer ${token}`,
+          // Don't set Content-Type - let browser set it automatically for FormData
         },
-        body: postData // Directly pass FormData
+        body: postData // FormData
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Post creation failed');
+        throw new Error(errorData.error || 'Post creation failed');
       }
 
       return await response.json();
@@ -71,27 +75,38 @@ export const postsAPI = {
     }
   },
 
-   getUserPosts: async (userId) => {
+  getUserPosts: async (userId) => {
     const response = await fetch(`${API_BASE}/posts/user/${userId}?_=${Date.now()}`, {
       method: 'GET',
       headers: {
         ...getAuthHeaders(),
       },
-      cache: 'no-store' // This is the key fix
+      cache: 'no-store'
     });
     
     return handleResponse(response);
   },
 
   delete: async (postId) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
     const response = await fetch(`${API_BASE}/posts/${postId}`, {
       method: 'DELETE',
       headers: {
-        ...getAuthHeaders(),
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
       }
     });
-    
-    return handleResponse(response);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to delete post');
+    }
+
+    return response.json();
   },
 
   update: async (postId, postData) => {
@@ -105,9 +120,31 @@ export const postsAPI = {
     const response = await fetch(`${API_BASE}/posts/${postId}`, {
       method: 'PUT',
       headers: {
-        ...getAuthHeaders(),
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
       },
       body: formData
+    });
+    
+    return handleResponse(response);
+  },
+
+  getAll: async () => {
+    const response = await fetch(`${API_BASE}/posts`, {
+      method: 'GET',
+      headers: {
+        ...getAuthHeaders(),
+      }
+    });
+    
+    return handleResponse(response);
+  },
+
+  getById: async (postId) => {
+    const response = await fetch(`${API_BASE}/posts/${postId}`, {
+      method: 'GET',
+      headers: {
+        ...getAuthHeaders(),
+      }
     });
     
     return handleResponse(response);

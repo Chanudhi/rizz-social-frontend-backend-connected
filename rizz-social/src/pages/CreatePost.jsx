@@ -14,41 +14,33 @@ export default function CreatePost() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handlePost = async () => {
-    setError("");
-    
-    if (!caption.trim()) {
-      setError("Please write something to post!");
-      return;
-    }
+const handlePost = async () => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    setError('You need to be logged in to post');
+    return;
+  }
 
-    setIsLoading(true);
-    
-    try {
-      const formData = new FormData();
-      formData.append('content', caption.trim());
-      if (selectedFile) {
-        formData.append('image', selectedFile);
-        // Add debug logging
-        console.log('Selected file:', {
-          name: selectedFile.name,
-          type: selectedFile.type,
-          size: selectedFile.size
-        });
-      }
-      
-      const response = await postsAPI.create(formData);
-      console.log('Post created:', response); // Debug log
-      
-      navigate("/");
-    } catch (err) {
-      console.error('Full error:', err); // More detailed error logging
-      setError(err.response?.data?.error || err.message || "Failed to create post");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  setIsLoading(true);
+  setError('');
 
+  const formData = new FormData();
+  formData.append('content', caption);
+  
+  if (selectedFile) {
+    formData.append('image', selectedFile);
+  }
+
+  try {
+    await postsAPI.create(formData);
+    navigate("/");
+  } catch (err) {
+    setError(err.message || 'Failed to create post');
+    console.error('Full error:', err);
+  } finally {
+    setIsLoading(false);
+  }
+};
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
