@@ -7,7 +7,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const postRoutes = require('./routes/post.routes');
-//const database = require('./configs/db');
+const database = require('./configs/db.config');
 
 const app = express();
 
@@ -16,17 +16,17 @@ app.use(bodyParser.json());
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// app.get('/api/test-db', async (req, res) => {
-//   try {
-//     const [rows] = await database.query('SELECT 1 + 1 AS solution');
-//     res.json({ 
-//       database: 'Connected successfully', 
-//       solution: rows[0].solution 
-//     });
-//   } catch (err) {
-//     res.status(500).json({ error: 'Database connection failed', details: err.message });
-//   }
-// });
+app.get('/api/test-db', async (req, res) => {
+  try {
+    const [rows] = await database.query('SELECT 1 + 1 AS solution');
+    res.json({ 
+      database: 'Connected successfully', 
+      solution: rows[0].solution 
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Database connection failed', details: err.message });
+  }
+});
 
 // Routes
 app.use('/api/v1/auth', authRoutes);

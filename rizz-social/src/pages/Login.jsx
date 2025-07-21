@@ -3,6 +3,7 @@ import Button from "../components/Button";
 import loginImg from "../assets/images/login.png";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { authAPI } from "../services/api";
 
 export default function Login() {
   //  State management for form data and validation
@@ -66,32 +67,12 @@ export default function Login() {
     
     setIsLoading(true);
     setGeneralError("");
-    
     try {
-     //replace with actual API call
-      // const response = await fetch('/api/auth/login', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(formData)
-      // });
+      const data = await authAPI.login(formData);
       
-      // const data = await response.json();
-      
-      // if (!response.ok) {
-      //   throw new Error(data.message || 'Login failed');
-      // }
-      
-      // //Store auth token
-      // localStorage.setItem('token', data.token);
-      // localStorage.setItem('user', JSON.stringify(data.user));
-      
-      // Simulate API call for now
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      console.log("Login attempt:", formData);
-      
+      // Store auth token
+      localStorage.setItem('token', data.token);
+
       // Navigate to home on successful login
       navigate("/");
     } catch (err) {

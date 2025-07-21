@@ -57,10 +57,13 @@ const register = async (req, res) => {
 // @access  Public
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, email, password } = req.body;
 
-    // Find user
-    const user = await User.findByEmail(email);
+    // Find user by username or email
+    const user = username 
+      ? await User.findByUsername(username) 
+      : await User.findByEmail(email);
+      
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }

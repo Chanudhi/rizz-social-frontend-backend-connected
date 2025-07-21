@@ -22,6 +22,15 @@ class User {
     }
   }
 
+  static async findByUsername(username) {
+    try {
+      const [rows] = await database.execute('SELECT * FROM users WHERE username = ?', [username]);
+      return rows[0];
+    } catch (error) {
+      throw error;
+    }
+  }
+
   static async findById(id) {
     try {
       const [rows] = await database.execute(

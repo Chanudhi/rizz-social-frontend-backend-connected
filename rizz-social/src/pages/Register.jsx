@@ -3,6 +3,7 @@ import Button from "../components/Button";
 import registerImg from "../assets/images/login.png";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { authAPI } from "../services/api";
 
 export default function Register() {
   //  State management for form data and validation
@@ -90,36 +91,13 @@ export default function Register() {
     
     setIsLoading(true);
     setGeneralError("");
-    
     try {
-      //  Replace with actual API call
-      // const response = await fetch('/api/auth/register', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     username: formData.username,
-      //     email: formData.email,
-      //     password: formData.password
-      //   })
-      // });
-      
-      // const data = await response.json();
-      
-      // if (!response.ok) {
-      //   throw new Error(data.message || 'Registration failed');
-      // }
-      
-      // Simulate API call for now
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      console.log("Registration attempt:", {
+      await authAPI.register({
         username: formData.username,
         email: formData.email,
         password: formData.password
       });
-      
+
       // Navigate to login page on successful registration
       navigate("/login");
     } catch (err) {

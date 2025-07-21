@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ImageIcon, MoreHorizontal, X } from "lucide-react";
+import { postsAPI } from "../services/api";
 
 export default function CreatePost() {
   const [caption, setCaption] = useState("");
@@ -27,24 +28,10 @@ export default function CreatePost() {
     setIsLoading(true);
     
     try {
-      
-      // const formData = new FormData();
-      // formData.append('caption', caption.trim());
-      // if (selectedFile) {
-      //   formData.append('image', selectedFile);
-      // }
-      // const response = await fetch('/api/posts', {
-      //   method: 'POST',
-      //   body: formData,
-      //   headers: {
-      //     'Authorization': `Bearer ${localStorage.getItem('token')}`
-      //   }
-      // });
-      
-      // Simulate API call for now
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      console.log("Posting:", { caption: caption.trim(), fileName, file: selectedFile });
+      await postsAPI.create({
+        content: caption.trim(),
+        image: selectedFile
+      });
       
       // Clear form after successful post
       setCaption("");
