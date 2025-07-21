@@ -1,16 +1,24 @@
 import { useNavigate } from 'react-router-dom';
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import { usersAPI } from "../services/api";
 
 export default function Profile() {
   const navigate = useNavigate();
+  const { user, updateUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    email: "",
-    username: "",
+    email: user.email || "",
+    username: user.username || "",
     password: ""
   });
+
+  useEffect(() => {
+    // Fetch or update user profile as needed
+    // This is a placeholder for actual data-fetching logic if needed
+  }, []);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -19,11 +27,21 @@ export default function Profile() {
     }));
   };
 
-  const handleSaveChanges = () => {
-    // Handle save logic here
-    setIsEditing(false);
-    // Navigate back to PostEditDelete page
-    navigate('/post'); // Adjust this path to match your routing setup
+  const handleSaveChanges = async () => {
+    try {
+      // Update user profile via API
+      await usersAPI.updateProfile(user.id, formData);
+      // Update auth context with new user data
+      updateUser({
+        email: formData.email,
+        username: formData.username
+      });
+      // Show success message or handle success actions
+      // For now, just stop editing mode
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+    }
   };
 
   const handleCancel = () => {
@@ -68,11 +86,11 @@ export default function Profile() {
               {/* Profile Avatar and Info */}
               <div className="flex flex-col items-center space-y-4 mb-8">
                 <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center">
-                  <span className="text-3xl font-bold text-white">A</span>
+                  <span className="text-3xl font-bold text-white">{user.username[0].toUpperCase()}</span>
                 </div>
                 <div className="text-center">
-                  <h2 className="text-2xl font-semibold text-white">Anne</h2>
-                  <p className="text-gray-400">@anne</p>
+                  <h2 className="text-2xl font-semibold text-white">{user.username}</h2>
+                  <p className="text-gray-400">@{user.username}</p>
                 </div>
               </div>
               

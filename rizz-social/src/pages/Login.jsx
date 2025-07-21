@@ -4,8 +4,11 @@ import loginImg from "../assets/images/login.png";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { authAPI } from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Login() {
+  const { login } = useAuth();
+  
   //  State management for form data and validation
   const [formData, setFormData] = useState({
     username: "",
@@ -70,8 +73,8 @@ export default function Login() {
     try {
       const data = await authAPI.login(formData);
       
-      // Store auth token
-      localStorage.setItem('token', data.token);
+      // Use auth context to handle login
+      login(data.user || { username: formData.username }, data.token);
 
       // Navigate to home on successful login
       navigate("/");

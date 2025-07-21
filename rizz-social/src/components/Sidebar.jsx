@@ -1,7 +1,17 @@
 import { Flame, Compass, Users, Mail, CirclePlus, LogOut } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Sidebar() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  // Handle logout functionality
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
     <div className="fixed top-0 left-0 h-screen w-60 bg-neutral-900 text-white flex flex-col justify-between p-6"> {/* Sidebar container */}
       <div className="flex flex-col gap-7"> {/* Sidebar Top content */}
@@ -14,7 +24,12 @@ export default function Sidebar() {
           <NavLink to="/create" className="flex gap-3 items-center"><CirclePlus size={18}/> Create</NavLink>
         </nav>
       </div>
-      <NavLink to="/login"  className="flex gap-3 items-center text-zinc-400 pl-2"><LogOut size={18}/> Logout</NavLink> {/* Logout link */}  
+      <button 
+        onClick={handleLogout}
+        className="flex gap-3 items-center text-zinc-400 pl-2 hover:text-white transition-colors cursor-pointer"
+      >
+        <LogOut size={18}/> Logout
+      </button>
     </div>
   );
 }
