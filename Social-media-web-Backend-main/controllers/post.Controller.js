@@ -1,5 +1,34 @@
+const database = require('../configs/db.config');
 const Post = require('../models/Post.model');
 
+// @route   GET /api/v1/posts/
+// @desc    Get all posts (with pagination)
+// @access  Public
+const getAllPosts = async (req, res) => {
+  try {
+    const [rows] = await database.execute(
+      'SELECT p.*, u.username, u.profile_picture FROM posts p JOIN users u ON p.user_id = u.id ORDER BY p.created_at DESC'
+    );
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// @route   GET /api/v1/posts/:id
+// @desc    Get single post by ID
+// @access  Public
+const getPostById = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    res.json(post);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};
 // @route   POST /api/v1/posts
 // @desc    Create a new post with optional image
 // @access  Private
@@ -8,31 +37,19 @@ const createPost = async (req, res) => {
     const imagePath = req.file 
       ? `/uploads/${req.file.filename}` 
       : null;
-
-    const post = await Post.create({
+    const postId = await Post.create({
       user_id: req.user.id,
       content: req.body.content,
       image_url: imagePath
     });
-
-    res.status(201).json(post);
+    // Get the created post with user information
+    const createdPost = await Post.findById(postId);
+    res.status(201).json(createdPost);
   } catch (error) {
+    console.error('Create post error:', error);
     res.status(500).json({ error: error.message });
   }
 };
-
-// @route   GET /api/v1/posts/user/:userId
-// @desc    Get all posts created by a specific user
-// @access  Public
-const getUserPosts = async (req, res) => {
-  try {
-    const posts = await Post.findByUserId(req.params.userId);
-    res.json(posts);
-  } catch (error) {
-    res.status(500).json({ error: 'Server error' });
-  }
-};
-
 // @route   DELETE /api/v1/posts/:id
 // @desc    Delete a post by ID if owned by the current user
 // @access  Private
@@ -43,6 +60,17 @@ const deletePost = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
   }
+};
+// @route   GET /api/v1/posts/user/:userId
+// @desc    Get all posts created by a specific user
+// @access  Public
+const getUserPosts = async (req, res) => {
+    try {
+        const posts = await Post.findById(req.params.userId);
+        res.json(posts);
+    } catch (error) {
+        res.status(500).json({ error: 'Server error' });
+    }
 };
 
 // @route   PUT /api/v1/posts/:id
@@ -83,4 +111,11 @@ const updatePost = async (req, res) => {
   }
 };
 
-module.exports = { createPost, getUserPosts, deletePost, updatePost };
+module.exports = { 
+  createPost, 
+  getUserPosts, 
+  deletePost, 
+  updatePost,
+  getAllPosts,
+  getPostById
+};

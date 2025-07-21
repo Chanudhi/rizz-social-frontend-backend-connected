@@ -9,17 +9,14 @@ import { postsAPI } from "../services/api";
 export default function CreatePost() {
   const [caption, setCaption] = useState("");
   const [fileName, setFileName] = useState("");
-  const [selectedFile, setSelectedFile] = useState(null); //  Store actual file object
-  const [isLoading, setIsLoading] = useState(false); // Loading state for post submission
-  const [error, setError] = useState(""); // Error handling state
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Enhanced post submission with proper validation and error handling
   const handlePost = async () => {
-    // Reset error state
     setError("");
     
-    // Validation: Check if caption has content
     if (!caption.trim()) {
       setError("Please write something to post!");
       return;
@@ -28,37 +25,30 @@ export default function CreatePost() {
     setIsLoading(true);
     
     try {
-      await postsAPI.create({
-        content: caption.trim(),
-        image: selectedFile
-      });
+      const formData = new FormData();
+      formData.append('content', caption.trim());
+      if (selectedFile) {
+        formData.append('image', selectedFile);
+      }
       
-      // Clear form after successful post
-      setCaption("");
-      setFileName("");
-      setSelectedFile(null);
-      
-      // Navigate to home page after posting
+      await postsAPI.create(formData);
       navigate("/");
     } catch (err) {
-      setError("Failed to create post. Please try again.");
+      setError(err.message || "Failed to create post");
       console.error("Post creation error:", err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Enhanced file handling with proper validation
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         setError("Please select a valid image file.");
         return;
       }
       
-      // Validate file size (5MB limit)
       if (file.size > 5 * 1024 * 1024) {
         setError("File size must be less than 5MB.");
         return;
@@ -66,19 +56,16 @@ export default function CreatePost() {
       
       setSelectedFile(file);
       setFileName(file.name);
-      setError(""); // Clear any previous errors
+      setError("");
     }
   };
 
-  // Function to remove selected file
   const removeSelectedFile = () => {
     setSelectedFile(null);
     setFileName("");
-    // Reset file input
     const fileInput = document.getElementById('postImage');
     if (fileInput) fileInput.value = '';
   };
-
   return (
     <div className="flex min-h-screen bg-black text-white">
       <Sidebar />

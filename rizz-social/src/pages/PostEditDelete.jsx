@@ -5,32 +5,14 @@ import Button from "../components/Button";
 import Navbar from "../components/Navbar";
 import { Heart, MessageCircle, Send, MoreHorizontal, ImageIcon, X } from "lucide-react";
 import TurnedInIcon from '@mui/icons-material/TurnedIn';
+import { useAuth } from "../contexts/AuthContext";
+import { postsAPI } from "../services/api";
 
 export default function PostEditDelete() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   
-  // State Management
-  const [user, setUser] = useState({
-    id: 1, // Get from auth context or props
-    name: "Anne",
-    username: "@anne",
-    avatar: "A"
-  });
-  
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      caption: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua sed do eiusmod tempo...",
-      imageUrl: "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=400&q=80",
-      likes: 29,
-      comments: 29,
-      shares: 29,
-      createdAt: "3 days ago",
-      userId: 1
-    }
-    //Replace with actual API data
-  ]);
-  
+  const [posts, setPosts] = useState([]);
   const [editingPost, setEditingPost] = useState(null);
   const [editFormData, setEditFormData] = useState({
     caption: "",
@@ -53,69 +35,39 @@ export default function PostEditDelete() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null);
 
-  //  Fetch user posts on component mount
   useEffect(() => {
     fetchUserPosts();
   }, []);
 
-  /**
-   * Fetch user's posts from backend
-   * Replace with actual API call
-   */
   const fetchUserPosts = async () => {
     setLoading(prev => ({ ...prev, posts: true }));
     setErrors(prev => ({ ...prev, general: "" }));
     
     try {
-       
-      // const response = await fetch(`/api/users/${user.id}/posts`, {
-      //   headers: {
-      //     'Authorization': `Bearer ${localStorage.getItem('token')}`
-      //   }
-      // });
-      
-      // if (!response.ok) {
-      //   throw new Error('Failed to fetch posts');
-      // }
-      
-      // const data = await response.json();
-      // setPosts(data.posts);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      console.log("Fetching user posts for user:", user.id);
+      const response = await postsAPI.getUserPosts(user.id);
+      setPosts(response);
     } catch (error) {
-      setErrors(prev => ({ ...prev, general: "Failed to load posts" }));
+      setErrors(prev => ({ ...prev, general: error.message || "Failed to load posts" }));
       console.error("Error fetching posts:", error);
     } finally {
       setLoading(prev => ({ ...prev, posts: false }));
     }
   };
 
-  /**
-   * Handle profile edit navigation
-   */
   const handleEditProfile = () => {
     navigate('/profile');
   };
 
-  /**
-   * Start editing a post
-   */
   const handleStartEdit = (post) => {
     setEditingPost(post.id);
     setEditFormData({
-      caption: post.caption,
+      caption: post.content,
       selectedFile: null,
       fileName: ""
     });
     setErrors(prev => ({ ...prev, edit: "" }));
   };
 
-  /**
-   * Cancel editing
-   */
   const handleCancelEdit = () => {
     setEditingPost(null);
     setEditFormData({
@@ -123,37 +75,27 @@ export default function PostEditDelete() {
       selectedFile: null,
       fileName: ""
     });
-    setErrors(prev => ({ ...prev, edit: "" }));
   };
 
-  /**
-   * Handle edit form input changes
-   */
   const handleEditInputChange = (field, value) => {
     setEditFormData(prev => ({
       ...prev,
       [field]: value
     }));
     
-    // Clear edit errors when user types
     if (errors.edit) {
       setErrors(prev => ({ ...prev, edit: "" }));
     }
   };
 
-  /**
-   * Handle file selection for post edit
-   */
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         setErrors(prev => ({ ...prev, edit: "Please select a valid image file." }));
         return;
       }
       
-      // Validate file size (5MB limit)
       if (file.size > 5 * 1024 * 1024) {
         setErrors(prev => ({ ...prev, edit: "File size must be less than 5MB." }));
         return;
@@ -168,23 +110,16 @@ export default function PostEditDelete() {
     }
   };
 
-  /**
-   * Remove selected file
-   */
   const removeSelectedFile = () => {
     setEditFormData(prev => ({
       ...prev,
       selectedFile: null,
       fileName: ""
     }));
-    // Reset file input
     const fileInput = document.getElementById('editPostImage');
     if (fileInput) fileInput.value = '';
   };
 
-  /**
-   * Validate edit form
-   */
   const validateEditForm = () => {
     if (!editFormData.caption.trim()) {
       setErrors(prev => ({ ...prev, edit: "Caption cannot be empty" }));
@@ -199,125 +134,58 @@ export default function PostEditDelete() {
     return true;
   };
 
-  /**
-   * Save post edits
-   */
   const handleSaveEdit = async () => {
-    if (!validateEditForm()) {
-      return;
-    }
+    if (!validateEditForm()) return;
     
     setLoading(prev => ({ ...prev, editing: true }));
     setErrors(prev => ({ ...prev, edit: "" }));
     
     try {
-     //Replace with actual API call
       const formData = new FormData();
-      formData.append('caption', editFormData.caption.trim());
+      formData.append('content', editFormData.caption.trim());
       if (editFormData.selectedFile) {
         formData.append('image', editFormData.selectedFile);
       }
       
-      const response = await fetch(`/api/posts/${editingPost}`, {
-        method: 'PUT',
-        body: formData,
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to update post');
-      }
-      
-      const updatedPost = await response.json();
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Update local state
-      setPosts(prev => prev.map(post => 
-        post.id === editingPost 
-          ? { ...post, caption: editFormData.caption.trim() }
-          : post
-      ));
-      
-      console.log("Updating post:", editingPost, editFormData);
-      
-      // Reset edit state
-      handleCancelEdit();
-      
+      await postsAPI.update(editingPost, formData);
+      await fetchUserPosts();
+      setEditingPost(null);
     } catch (error) {
-      setErrors(prev => ({ ...prev, edit: "Failed to update post. Please try again." }));
+      setErrors(prev => ({ ...prev, edit: error.message || "Failed to update post" }));
       console.error("Error updating post:", error);
     } finally {
       setLoading(prev => ({ ...prev, editing: false }));
     }
   };
 
-  /**
-   * Show delete confirmation modal
-   */
   const handleDeleteClick = (post) => {
     setPostToDelete(post);
     setShowDeleteModal(true);
     setErrors(prev => ({ ...prev, delete: "" }));
   };
 
-  /**
-   * Cancel delete operation
-   */
   const handleCancelDelete = () => {
     setShowDeleteModal(false);
     setPostToDelete(null);
-    setErrors(prev => ({ ...prev, delete: "" }));
   };
 
-  /**
-   * Confirm and execute post deletion
-   */
   const handleConfirmDelete = async () => {
     if (!postToDelete) return;
     
     setLoading(prev => ({ ...prev, deleting: true }));
-    setErrors(prev => ({ ...prev, delete: "" }));
     
     try {
-      // Replace with actual API call
-      // const response = await fetch(`/api/posts/${postToDelete.id}`, {
-      //   method: 'DELETE',
-      //   headers: {
-      //     'Authorization': `Bearer ${localStorage.getItem('token')}`
-      //   }
-      // });
-      
-      // if (!response.ok) {
-      //   throw new Error('Failed to delete post');
-      // }
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Update local state
-      setPosts(prev => prev.filter(post => post.id !== postToDelete.id));
-      
-      console.log("Deleting post:", postToDelete.id);
-      
-      // Reset delete state
-      handleCancelDelete();
-      
+      await postsAPI.delete(postToDelete.id);
+      await fetchUserPosts();
+      setShowDeleteModal(false);
     } catch (error) {
-      setErrors(prev => ({ ...prev, delete: "Failed to delete post. Please try again." }));
+      setErrors(prev => ({ ...prev, delete: error.message || "Failed to delete post" }));
       console.error("Error deleting post:", error);
     } finally {
       setLoading(prev => ({ ...prev, deleting: false }));
     }
   };
 
-  /**
-   * Handle post interactions (like, comment, share)
-   *Implement actual functionality
-   */
   const handlePostInteraction = (postId, type) => {
     console.log(`${type} action for post:`, postId);
     // Implement API calls for post interactions
@@ -344,11 +212,11 @@ export default function PostEditDelete() {
             <div className="bg-neutral-800 p-6 rounded-2xl flex justify-between items-center">
               <div className="flex items-center space-x-4">
                 <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center">
-                  <span className="text-2xl font-bold text-white">{user.avatar}</span>
+                  <span className="text-2xl font-bold text-white">{user.username?.charAt(0).toUpperCase()}</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-semibold text-white text-xl">{user.name}</span>
-                  <span className="text-gray-400 text-sm">{user.username}</span>
+                  <span className="font-semibold text-white text-xl">{user.username}</span>
+                  <span className="text-gray-400 text-sm">@{user.username}</span>
                 </div>
               </div>
               <button 
@@ -383,11 +251,11 @@ export default function PostEditDelete() {
                     <div className="flex items-start justify-between">
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-neutral-700 rounded-full flex items-center justify-center">
-                          <span className="text-white text-lg font-bold">{user.avatar}</span>
+                          <span className="text-white text-lg font-bold">{user.username?.charAt(0).toUpperCase()}</span>
                         </div>
                         <div>
-                          <span className="font-semibold block text-white">{user.name}</span>
-                          <span className="text-gray-400 text-sm block">{post.createdAt}</span>
+                          <span className="font-semibold block text-white">{user.username}</span>
+                          <span className="text-gray-400 text-sm block">{new Date(post.created_at).toLocaleString()}</span>
                         </div>
                       </div>
                       <MoreHorizontal size={24} className="text-gray-400 cursor-pointer" />
@@ -395,11 +263,13 @@ export default function PostEditDelete() {
                     
                     {/* Post Content */}
                     <div className="flex flex-row gap-6">
-                      <img
-                        src={post.imageUrl}
-                        alt="post"
-                        className="w-156 h-96 object-cover rounded-xl flex-shrink-0"
-                      />
+                      {post.image_url && (
+                        <img
+                          src={post.image_url}
+                          alt="post"
+                          className="w-156 h-96 object-cover rounded-xl flex-shrink-0"
+                        />
+                      )}
                       <div className="flex flex-col justify-between flex-1">
                         {editingPost === post.id ? (
                           // Edit Mode
@@ -453,7 +323,7 @@ export default function PostEditDelete() {
                         ) : (
                           // View Mode
                           <p className="text-gray-300 text-base leading-relaxed">
-                            {post.caption}
+                            {post.content}
                           </p>
                         )}
                       </div>
@@ -467,21 +337,21 @@ export default function PostEditDelete() {
                           className="flex items-center space-x-2 hover:text-pink-500 transition"
                         >
                           <Heart size={22} />
-                          <span className="text-base">{post.likes}</span>
+                          <span className="text-base">{post.likes || 0}</span>
                         </button>
                         <button 
                           onClick={() => handlePostInteraction(post.id, 'comment')}
                           className="flex items-center space-x-2 hover:text-blue-500 transition"
                         >
                           <MessageCircle size={22} />
-                          <span className="text-base">{post.comments}</span>
+                          <span className="text-base">{post.comments || 0}</span>
                         </button>
                         <button 
                           onClick={() => handlePostInteraction(post.id, 'share')}
                           className="flex items-center space-x-2 hover:text-green-500 transition"
                         >
                           <Send size={22} />
-                          <span className="text-base">{post.shares}</span>
+                          <span className="text-base">{post.shares || 0}</span>
                         </button>
                         <button 
                           onClick={() => handlePostInteraction(post.id, 'save')}
@@ -519,14 +389,12 @@ export default function PostEditDelete() {
                             onClick={() => handleStartEdit(post)}
                             className="bg-blue-600 hover:bg-blue-700 flex-1 flex items-center justify-center gap-2"
                           >
-                           
                             Edit
                           </Button>
                           <Button 
                             onClick={() => handleDeleteClick(post)}
                             className="bg-red-600 hover:bg-red-700 flex-1 flex items-center justify-center gap-2"
                           >
-                            
                             Delete
                           </Button>
                         </>

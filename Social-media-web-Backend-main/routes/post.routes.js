@@ -1,13 +1,36 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middlewares/auth.middleware');
-const upload = require('../middlewares/upload.middleware');
-const { createPost, getUserPosts, deletePost,updatePost  } = require('../controllers/post.Controller');
+const postController = require('../controllers/post.Controller');
+const authMiddleware = require('../middleware/auth.middleware');
+const uploadMiddleware = require('../middleware/upload.middleware');
 
-router.post('/', auth, upload.single('image'), createPost);
-router.get('/user/:userId', auth, getUserPosts);
-router.delete('/:id', auth, deletePost);
-router.put('/:id', auth, upload.single('image'), updatePost);
+// Create a new post (with optional image)
+router.post(
+  '/',
+  authMiddleware,
+  uploadMiddleware.single('image'),
+  postController.createPost
+);
+
+// Get all posts (with pagination)
+router.get('/', postController.getAllPosts);
+
+// Get posts by specific user
+router.get('/user/:userId', postController.getUserPosts);
+
+// Get single post by ID
+router.get('/:id', postController.getPostById);
+
+// Update a post
+router.put(
+  '/:id',
+  authMiddleware,
+  uploadMiddleware.single('image'),
+  postController.updatePost
+);
+
+// Delete a post
+router.delete('/:id', authMiddleware, postController.deletePost);
 
 module.exports = router;
 

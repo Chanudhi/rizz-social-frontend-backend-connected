@@ -10,15 +10,32 @@ export default function Profile() {
   const { user, updateUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    email: user.email || "",
-    username: user.username || "",
+    email: "",
+    username: "",
     password: ""
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    // Fetch or update user profile as needed
-    // This is a placeholder for actual data-fetching logic if needed
-  }, []);
+    const fetchProfile = async () => {
+      try {
+        setLoading(true);
+        const profile = await usersAPI.getProfile(user.id);
+        setFormData({
+          email: profile.email,
+          username: profile.username,
+          password: ""
+        });
+      } catch (err) {
+        setError(err.message || "Failed to load profile");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchProfile();
+  }, [user.id]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -29,32 +46,30 @@ export default function Profile() {
 
   const handleSaveChanges = async () => {
     try {
-      // Update user profile via API
+      setLoading(true);
+      setError("");
+      
       await usersAPI.updateProfile(user.id, formData);
-      // Update auth context with new user data
       updateUser({
         email: formData.email,
         username: formData.username
       });
-      // Show success message or handle success actions
-      // For now, just stop editing mode
+      
       setIsEditing(false);
+      navigate('/post');
     } catch (error) {
-      console.error("Failed to update profile:", error);
+      setError(error.message || "Failed to update profile");
+      console.error("Profile update error:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleCancel = () => {
     setIsEditing(false);
-    // Reset form data if needed
-    setFormData({
-      email: "",
-      username: "",
-      password: ""
-    });
-    // Navigate back to PostEditDelete page
     navigate('/post');
   };
+
 
   return (
     <div className="flex min-h-screen bg-black text-white">
