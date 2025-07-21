@@ -63,5 +63,4 @@ npm start
 - JWT authentication
 - File upload handling
 
-## Development
-This project is now set up as a monorepo with both frontend and backend code in the same repository for easier development and deployment.
+
