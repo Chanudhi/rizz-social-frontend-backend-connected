@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState,useCallback, useEffect } from 'react';
 import Sidebar from "../components/Sidebar";
 import Button from "../components/Button";
 import Navbar from "../components/Navbar";
@@ -35,24 +35,25 @@ export default function PostEditDelete() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null);
 
-  useEffect(() => {
-    fetchUserPosts();
-  }, []);
+const fetchUserPosts = useCallback(async () => {
+  setLoading(prev => ({ ...prev, posts: true }));
+  setErrors(prev => ({ ...prev, general: "" }));
+  
+  try {
+    const response = await postsAPI.getUserPosts(user.id);
+    setPosts(Array.isArray(response) ? response : []);
+  } catch (error) {
+    setErrors(prev => ({ ...prev, general: error.message || "Failed to load posts" }));
+    console.error("Error fetching posts:", error);
+    setPosts([]);
+  } finally {
+    setLoading(prev => ({ ...prev, posts: false }));
+  }
+}, [user.id]); 
 
-  const fetchUserPosts = async () => {
-    setLoading(prev => ({ ...prev, posts: true }));
-    setErrors(prev => ({ ...prev, general: "" }));
-    
-    try {
-      const response = await postsAPI.getUserPosts(user.id);
-      setPosts(response);
-    } catch (error) {
-      setErrors(prev => ({ ...prev, general: error.message || "Failed to load posts" }));
-      console.error("Error fetching posts:", error);
-    } finally {
-      setLoading(prev => ({ ...prev, posts: false }));
-    }
-  };
+useEffect(() => {
+  fetchUserPosts();
+}, [fetchUserPosts]);
 
   const handleEditProfile = () => {
     navigate('/profile');
@@ -234,18 +235,18 @@ export default function PostEditDelete() {
               </h3>
               
               {/* Posts List */}
-              {posts.length === 0 && !loading.posts ? (
-                <div className="text-center py-12 text-gray-400">
-                  <p>No posts yet. Start sharing your thoughts!</p>
-                  <button 
-                    onClick={() => navigate('/create')}
-                    className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full transition"
-                  >
-                    Create Post
-                  </button>
-                </div>
+              {Array.isArray(posts) && posts.length === 0 && !loading.posts ? (
+              <div className="text-center py-12 text-gray-400">
+                <p>No posts yet. Start sharing your thoughts!</p>
+                <button 
+                  onClick={() => navigate('/create')}
+                  className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full transition"
+                >
+                  Create Post
+                </button>
+              </div>
               ) : (
-                posts.map((post) => (
+                Array.isArray(posts) && posts.map((post) => (
                   <div key={post.id} className="bg-neutral-800 p-6 rounded-2xl space-y-4">
                     {/* Post Header */}
                     <div className="flex items-start justify-between">

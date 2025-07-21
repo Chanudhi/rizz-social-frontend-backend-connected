@@ -16,7 +16,10 @@ router.post(
 router.get('/', postController.getAllPosts);
 
 // Get posts by specific user
-router.get('/user/:userId', postController.getUserPosts);
+router.get('/user/:userId',(req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+},postController.getUserPosts);
 
 // Get single post by ID
 router.get('/:id', postController.getPostById);

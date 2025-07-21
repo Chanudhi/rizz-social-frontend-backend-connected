@@ -12,13 +12,22 @@ class Post {
   return result.insertId;
 }
 
-  static async findByUserId(user_id) {
+static async findByUserId(user_id) {
+  try {
     const [rows] = await database.execute(
-      'SELECT p.*, u.username, u.profile_picture FROM posts p JOIN users u ON p.user_id = u.id WHERE p.user_id = ? ORDER BY p.created_at DESC',
+      `SELECT p.*, u.username, u.profile_picture 
+       FROM posts p 
+       JOIN users u ON p.user_id = u.id 
+       WHERE p.user_id = ? 
+       ORDER BY p.created_at DESC`,
       [user_id]
     );
     return rows;
+  } catch (error) {
+    console.error('Database error:', error);
+    throw error; // Propagate to controller
   }
+}
 
   static async findById(post_id) {
     const [rows] = await database.execute(

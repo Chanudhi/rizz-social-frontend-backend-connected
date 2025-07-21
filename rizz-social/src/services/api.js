@@ -67,12 +67,13 @@ export const postsAPI = {
     return handleResponse(response);
   },
 
-  getUserPosts: async (userId) => {
-    const response = await fetch(`${API_BASE}/posts/user/${userId}`, {
+   getUserPosts: async (userId) => {
+    const response = await fetch(`${API_BASE}/posts/user/${userId}?_=${Date.now()}`, {
       method: 'GET',
       headers: {
         ...getAuthHeaders(),
-      }
+      },
+      cache: 'no-store' // This is the key fix
     });
     
     return handleResponse(response);

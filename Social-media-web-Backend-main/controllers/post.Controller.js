@@ -65,12 +65,28 @@ const deletePost = async (req, res) => {
 // @desc    Get all posts created by a specific user
 // @access  Public
 const getUserPosts = async (req, res) => {
-    try {
-        const posts = await Post.findById(req.params.userId);
-        res.json(posts);
-    } catch (error) {
-        res.status(500).json({ error: 'Server error' });
+  try {
+    console.log('Fetching posts for user:', req.params.userId); // Debug log
+    
+    // Add input validation
+    if (!req.params.userId || isNaN(req.params.userId)) {
+      return res.status(400).json({ error: 'Invalid user ID' });
     }
+
+    const posts = await Post.findByUserId(req.params.userId);
+    
+    if (!posts) {
+      return res.status(404).json({ error: 'No posts found' });
+    }
+
+    res.json(posts);
+  } catch (error) {
+    console.error('Post fetch error:', error); // Detailed logging
+    res.status(500).json({ 
+      error: 'Failed to fetch posts',
+      details: error.message // Include actual error
+    });
+  }
 };
 
 // @route   PUT /api/v1/posts/:id
