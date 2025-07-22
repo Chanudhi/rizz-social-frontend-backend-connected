@@ -265,7 +265,7 @@ const handleSaveEdit = async () => {
                         </div>
                         <div>
                           <span className="font-semibold block text-white">{user.username}</span>
-                          <span className="text-gray-400 text-sm block">{new Date(post.created_at).toLocaleString()}</span>
+                          <span className="text-gray-400 text-sm block">@{user.username}</span>
                         </div>
                       </div>
                       <MoreHorizontal size={24} className="text-gray-400 cursor-pointer" />
