@@ -4,6 +4,13 @@ const postController = require('../controllers/post.Controller');
 const authMiddleware = require('../middleware/auth.middleware');
 const uploadMiddleware = require('../middleware/upload.middleware');
 
+// Update a post
+router.put(
+  '/:id',
+  authMiddleware,
+  uploadMiddleware.single('image'), // 'image' must match the FormData field name
+  postController.updatePost
+)
 // Create a new post (with optional image)
 router.post(
   '/',
@@ -24,13 +31,7 @@ router.get('/user/:userId',(req, res, next) => {
 // Get single post by ID
 router.get('/:id', postController.getPostById);
 
-// Update a post
-router.put(
-  '/:id',
-  authMiddleware,
-  uploadMiddleware.single('image'), 
-  postController.updatePost
-);
+
 
 // Delete a post
 router.delete('/:id', authMiddleware, postController.deletePost);

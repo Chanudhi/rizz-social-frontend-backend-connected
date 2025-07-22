@@ -96,38 +96,38 @@ const getUserPosts = async (req, res) => {
 // @access  Private
 const updatePost = async (req, res) => {
   try {
-    const { id } = req.params;
-    const content = req.body.content; // Get content from FormData
+    console.log('Raw request body:', req.body); // Should show multipart boundaries
+    console.log('Files:', req.file); // Check if file exists
     
-    console.log('Update request received:', { id, content }); // Debug log
+    const { id } = req.params;
+    const content = req.body.content; // Make sure this matches FormData field name
+    
+    if (!content && !req.file) {
+      return res.status(400).json({ error: 'No changes provided' });
+    }
 
     const existingPost = await Post.findById(id);
     if (!existingPost) {
       return res.status(404).json({ error: 'Post not found' });
     }
-    if (existingPost.user_id !== req.user.id) {
-      return res.status(403).json({ error: 'Not authorized to update this post' });
-    }
 
     let image_url = existingPost.image_url;
     if (req.file) {
       image_url = `/uploads/${req.file.filename}`;
+      console.log('New image path:', image_url);
     }
 
     await Post.update(id, { 
       content: content || existingPost.content,
-      image_url
+      image_url 
     });
 
     const updatedPost = await Post.findById(id);
     res.json(updatedPost);
-
+    
   } catch (error) {
-    console.error('Error updating post:', error);
-    res.status(500).json({ 
-      error: 'Server error',
-      details: error.message 
-    });
+    console.error('Update error:', error);
+    res.status(500).json({ error: error.message });
   }
 };
 

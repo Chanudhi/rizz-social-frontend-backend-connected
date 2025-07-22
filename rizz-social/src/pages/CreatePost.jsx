@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ImageIcon, MoreHorizontal, X } from "lucide-react";
 import { postsAPI } from "../services/api";
+import { useAuth } from '../contexts/AuthContext';
 
 export default function CreatePost() {
   const [caption, setCaption] = useState("");
@@ -13,6 +14,7 @@ export default function CreatePost() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+   const { user } = useAuth();
 
 const handlePost = async () => {
   const token = localStorage.getItem('token');
@@ -91,8 +93,8 @@ const handlePost = async () => {
                     </svg>
                   </div>
                   <div>
-                    <span className="font-semibold text-white">Anne</span>
-                    <span className="text-gray-400 text-sm block">@anne</span>
+                    <span className="font-semibold text-white">{user?.username || 'User'}</span>
+                    <span className="text-gray-400 text-sm block">@{user?.username?.toLowerCase() || 'username'}</span>
                   </div>
                 </div>
                 <MoreHorizontal size={24} className="text-gray-400 cursor-pointer" />

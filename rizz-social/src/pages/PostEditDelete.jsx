@@ -143,26 +143,26 @@ const handleSaveEdit = async () => {
   
   try {
     const formData = new FormData();
-    formData.append('content', editFormData.caption.trim());
+    // Use the exact field name your backend expects
+    formData.append('content', editFormData.caption);
     
-    // Debug: Log FormData contents before sending
+    // Debug: Verify FormData contents
     for (let [key, value] of formData.entries()) {
-      console.log(key, value);
+      console.log('FormData:', key, value);
     }
 
     if (editFormData.selectedFile) {
       formData.append('image', editFormData.selectedFile);
+      console.log('Including file:', editFormData.selectedFile.name);
     }
     
-    await postsAPI.update(editingPost, formData);
+    const response = await postsAPI.update(editingPost, formData);
+    console.log('Update response:', response);
     await fetchUserPosts();
     setEditingPost(null);
   } catch (error) {
-    setErrors(prev => ({ 
-      ...prev, 
-      edit: error.message || "Failed to update post. Please try again." 
-    }));
-    console.error("Error updating post:", error);
+    console.error('Update error:', error);
+    setErrors(prev => ({ ...prev, edit: error.message || "Update failed" }));
   } finally {
     setLoading(prev => ({ ...prev, editing: false }));
   }
@@ -272,12 +272,12 @@ const handleSaveEdit = async () => {
                     </div>
                     
                     {/* Post Content */}
-                    <div className="flex flex-row gap-6">
+                    <div className="flex flex-col md:flex-row gap-6">
                       {post.image_url && (
                         <img
                           src={post.image_url}
                           alt="post"
-                          className="w-156 h-96 object-cover rounded-xl flex-shrink-0"
+                          className="w-full md:w-156 h-auto md:h-96 object-cover rounded-xl"
                         />
                       )}
                       <div className="flex flex-col justify-between flex-1">
@@ -332,9 +332,11 @@ const handleSaveEdit = async () => {
                           </div>
                         ) : (
                           // View Mode
-                          <p className="text-gray-300 text-base leading-relaxed">
-                            {post.content}
-                          </p>
+                          <div className="space-y-4">
+                            <p className="text-gray-300 text-base leading-relaxed">
+                              {post.content}
+                            </p>
+                          </div>
                         )}
                       </div>
                     </div>

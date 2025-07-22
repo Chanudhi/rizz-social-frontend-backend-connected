@@ -114,24 +114,31 @@ export const postsAPI = {
     return response.json();
   },
 
-  update: async (postId, postData) => {
-    const formData = new FormData();
-    formData.append('content', postData.content);
-    
-    if (postData.image) {
-      formData.append('image', postData.image);
-    }
-    
+update: async (postId, postData) => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('Authentication required');
+
     const response = await fetch(`${API_BASE}/posts/${postId}`, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Authorization': `Bearer ${token}`,
+        // NO Content-Type header - let browser set it with boundary
       },
-      body: formData
+      body: postData
     });
-    
-    return handleResponse(response);
-  },
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Update failed');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('API Update Error:', error);
+    throw error;
+  }
+},
 
   getAll: async () => {
     const response = await fetch(`${API_BASE}/posts`, {
